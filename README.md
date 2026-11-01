@@ -55,8 +55,8 @@ Plan about an hour for the first read. You do not need to remember everything �
 | Tasks | Asana project: `https://app.asana.com/1/2427620016900/project/1220109449481948` |
 | Code | GitHub organization (you will receive an invitation) |
 | This handbook | The `handbook` repository |
-| PayGate integration docs | <https://paygate.wallet.shatori.com/docs> *(available after deploy)* |
-| Environments | `*.wallet.shatori.com` — see [architecture.md](architecture.md#environments) |
+| PayGate integration docs | <https://paygate.wallet.shatori.com/docs> |
+| Environments | <https://staging.wallet.shatori.com> (+ `kvitka-uat`, `wisla-uat`) — see [architecture.md](architecture.md#environments) |
 
 ## Ground rules
 

@@ -137,10 +137,23 @@ cd ops && CLIENT=kvitka ./dev.sh up all
 When running a service from source: `CLIENT=kvitka DEV_AUTH=true npm run start:dev`.
 The backends report the current client in `health { client }`.
 
+## Deployed environments
+
+Besides your local stack there are three shared environments, deployed automatically from Git:
+
+| Environment | Branch | Client app | Back-office | APIs |
+|---|---|---|---|---|
+| `staging` | `main` | <https://staging.wallet.shatori.com> | <https://staging-admin.wallet.shatori.com> | `https://staging-{wallet-core,rates,treasury}.wallet.shatori.com` |
+| `kvitka-uat` | `client/kvitka-uat` | <https://kvitka-uat.wallet.shatori.com> | <https://kvitka-uat-admin.wallet.shatori.com> | `https://kvitka-uat-{wallet-core,rates,treasury}.wallet.shatori.com` |
+| `wisla-uat` | `client/wisla-uat` | <https://wisla-uat.wallet.shatori.com> | <https://wisla-uat-admin.wallet.shatori.com> | `https://wisla-uat-{wallet-core,rates,treasury}.wallet.shatori.com` |
+
+Dev auth (`Authorization: Dev 1:wallet`) works on `staging` only. Check a backend with
+`curl https://staging-wallet-core.wallet.shatori.com/health`. Details: [architecture.md](architecture.md#environments).
+
 ## PayGate
 
-PayGate is not part of the local stack: it is an external sandbox at `https://paygate.wallet.shatori.com`
-(docs at `/docs`, available after deploy). API keys come from the mentor — keep them in your local `.env`, never in Git.
+PayGate is not part of the local stack: it is an external sandbox at <https://paygate.wallet.shatori.com>
+(docs at <https://paygate.wallet.shatori.com/docs>). API keys come from the mentor — keep them in your local `.env`, never in Git.
 
 ## Not there yet
 

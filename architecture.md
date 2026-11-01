@@ -128,16 +128,25 @@ different update speeds, bid/ask vs. mid, staleness per source, outliers.
 Each environment serves **exactly one client**, chosen by the `CLIENT` environment variable, and has its own databases.
 There is no client production environment — UAT is the final stage in this project.
 
-| Environment | Deployed from branch | `CLIENT` | Client app URL |
-|---|---|---|---|
-| `staging` | `main` | `demo` | `https://staging.wallet.shatori.com` |
-| `kvitka-uat` | `client/kvitka-uat` | `kvitka` | `https://kvitka-uat.wallet.shatori.com` |
-| `wisla-uat` | `client/wisla-uat` | `wisla` | `https://wisla-uat.wallet.shatori.com` |
-| `stablo-uat` *(later)* | `client/stablo-uat` | `stablo` | `https://stablo-uat.wallet.shatori.com` |
+| Environment | Deployed from branch | `CLIENT` | Dev auth | Client app | Back-office |
+|---|---|---|---|---|---|
+| `staging` | `main` | `demo` | on | <https://staging.wallet.shatori.com> | <https://staging-admin.wallet.shatori.com> |
+| `kvitka-uat` | `client/kvitka-uat` | `kvitka` | off | <https://kvitka-uat.wallet.shatori.com> | <https://kvitka-uat-admin.wallet.shatori.com> |
+| `wisla-uat` | `client/wisla-uat` | `wisla` | off | <https://wisla-uat.wallet.shatori.com> | <https://wisla-uat-admin.wallet.shatori.com> |
+| `stablo-uat` *(later)* | `client/stablo-uat` | `stablo` | off | `https://stablo-uat.wallet.shatori.com` | `https://stablo-uat-admin.wallet.shatori.com` |
 
-- Sub-domains for the back-office and APIs follow the same pattern (e.g. `admin.<env>.wallet.shatori.com`);
-  the exact names will be confirmed when the environments are deployed.
-- PayGate is **one shared instance**: `https://paygate.wallet.shatori.com` (docs at `/docs`, available after deploy).
-- Deploys happen **only through CI**: a push to `main` or `client/**` builds images and redeploys the matching environment.
-  Nobody deploys by hand. See [workflow.md](workflow.md#branches-and-releases).
+Backends of an environment (GraphQL at `/graphql`, health at `/health`, subscriptions over `wss://` on the same path):
+
+| Service | URL |
+|---|---|
+| `wallet-core` | `https://<env>-wallet-core.wallet.shatori.com` (e.g. <https://staging-wallet-core.wallet.shatori.com/health>) |
+| `rates-service` | `https://<env>-rates.wallet.shatori.com` |
+| `treasury-service` | `https://<env>-treasury.wallet.shatori.com` |
+
+- Frontends are static builds on **Cloudflare Pages**; backends run on the mentor's VPS (Dokploy) with one shared
+  MySQL (a database per environment and service, e.g. `staging_wallet_core`) and one Redis (keys prefixed with `APP_ENV`).
+- PayGate is **one shared instance**: <https://paygate.wallet.shatori.com> (docs at [`/docs`](https://paygate.wallet.shatori.com/docs)).
+- Deploys happen **only through CI**: a push (a merged PR) to `main` or `client/<c>-uat` builds the image / static app in
+  GitHub Actions and redeploys that environment; the job turns green only when the new version is live.
+  Nobody deploys by hand. See [workflow.md](workflow.md#branches-and-releases) and the `ops` README (*Deployment*).
 - Locally, you run the whole system with docker-compose — see [setup.md](setup.md).
