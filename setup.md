@@ -83,7 +83,12 @@ curl -s localhost:3000/graphql -H 'content-type: application/json' \
 - GraphQL subscriptions: send the same value as `Authorization` in the graphql-ws connection params.
 - Frontends send the dev user from `VITE_DEV_USER` (e.g. `VITE_DEV_USER=1:wallet` in `.env.local`).
 
-Real login (JWT) replaces this later without changes to your business code — see the backend READMEs (*Seams*).
+Dev auth is allowed only when `APP_ENV` is `local` or `staging`; in client UAT environments the services refuse to
+start with `DEV_AUTH=true`. Real login (JWT) replaces it later without changes to your business code — see the
+backend READMEs (*Seams*).
+
+`APP_ENV` (default `local`) also prefixes every Redis channel, stream and queue (`local:rate.tick`), so several
+environments can share one Redis. Use the event helpers in each backend instead of raw Redis names.
 
 ## Frontends without backends: mocks
 
