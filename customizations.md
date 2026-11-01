@@ -51,6 +51,12 @@ How our clients' differences map onto the ladder:
 
 Typed values with safe defaults, editable per client in the back-office (spread, fees, limits, feature switches).
 
+How they are stored:
+
+- **Defaults live in the platform code.** Every setting has one, so a fresh environment works with an empty database.
+- **The database stores only overrides.** A row appears only when a client changes a value; delete the row and the default applies again.
+- **One environment = one client = one database.** On `kvitka-uat` the database holds only Kvitka's overrides; there is no table of "all clients".
+
 ```ts
 const required = await settings.get('kyc.requiredBeforeTopUp'); // false by default, true for Kvitka
 if (required && user.kycStatus !== 'approved') throw new KycRequiredError();
