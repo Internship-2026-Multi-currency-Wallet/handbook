@@ -54,8 +54,8 @@ feat/* ──PR──► main ──(cut)──► version_1.3 ──(fan-out bo
    client-only code resolves them by merging `client/<c>-uat` into the `auto/...` branch.
    Resolving these conflicts well is one of the key skills of this project.
 4. **UAT** — a merged fan-out PR deploys to `<c>-uat`; the team checks the release there.
-5. **Hotfix** — fix on `hotfix/*` → PR into `main`; then the `cherry-pick` workflow opens PRs with that commit
-   to the selected client branches.
+5. **Hotfix** — *process to be defined.* For now, urgent fixes go through the normal flow; ask the mentor
+   before fixing anything directly on a client branch.
 
 Several of these workflows (cut-release, fan-out, cherry-pick, branch → environment mapping, onboarding a new client)
 are **your tasks** in the delivery epic. The mentor provides only the basic `main` → `staging` deploy.
