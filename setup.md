@@ -15,7 +15,9 @@ Also recommended:
 
 - An editor with TypeScript, ESLint and Prettier support (e.g. VS Code).
 - SSH key or a credential helper configured for GitHub.
-- At least 8 GB of RAM free for Docker when running the full stack.
+- Docker memory: the infrastructure (MySQL + Redis) needs well under 1 GiB. Building images needs more —
+  parallel builds crash a Docker VM with 2 GiB, so `dev.sh` builds one image at a time. To run the whole stack,
+  give Docker at least 4 GiB (Docker Desktop: *Settings → Resources*; Colima: `colima start --memory 4`).
 
 ## 1. Clone the repositories side by side
 
@@ -26,43 +28,67 @@ for repo in ops wallet-core rates-service treasury-service client-web back-offic
 done
 ```
 
-The `ops` stack builds the services from these sibling folders, so keep the names.
+The `ops` stack builds the services from these sibling folders, and every repository calls `../ops/dev.sh`, so keep
+the names.
 
-## 2. Start the whole system
+## 2. Start the infrastructure — and only what else you need
+
+You usually change one service and run it from source with hot reload. It needs MySQL and Redis, sometimes one or
+two other services. `ops/dev.sh` starts exactly that: the infrastructure is always on, every application service is
+opt-in.
 
 ```sh
 cd ops
-docker compose up --build
+./dev.sh up                                   # MySQL (all databases) + Redis — no application services
+./dev.sh up rates-service treasury-service    # + these services in containers
+./dev.sh up all                               # the whole system
+./dev.sh ps                                   # also: logs <service>, build <service>, info, help
+./dev.sh down                                 # stop (data is kept)
 ```
 
-The first build takes a few minutes. When `docker compose ps` shows every service as `healthy`, open:
+Every application repository has the same commands as npm scripts, so you never leave your service folder:
+
+```sh
+npm run infra:up                              # ../ops/dev.sh up
+npm run infra -- up rates-service             # ../ops/dev.sh up rates-service
+npm run infra:down                            # ../ops/dev.sh down
+```
+
+`dev.sh up` waits until everything is `healthy` and prints the ports and the env values a service run from source
+should use (`DATABASE_URL`, `REDIS_URL`, URLs of the other services). Each service has the same port in Docker and
+from source:
 
 | What | URL |
 |---|---|
-| Client app (`client-web`) | <http://localhost:8080> |
-| Back-office (`back-office`) | <http://localhost:8081> |
+| Client app (`client-web`) | <http://localhost:8080> in Docker, <http://localhost:5173> with `npm run dev` |
+| Back-office (`back-office`) | <http://localhost:8081> in Docker, <http://localhost:5174> with `npm run dev` |
 | `wallet-core` GraphQL | <http://localhost:3000/graphql> (health: `/health`) |
 | `rates-service` GraphQL | <http://localhost:3001/graphql> (subscriptions: `ws://localhost:3001/graphql`) |
 | `treasury-service` GraphQL | <http://localhost:3002/graphql> |
 | MySQL 8 | `localhost:3306`, user `wallet` / `wallet` (one database per service) |
 | Redis | `localhost:6379` |
 
-The backends apply their database migrations on start. Stop with `docker compose down`;
-`docker compose down -v` also deletes all data.
+The backends apply their database migrations on start. `./dev.sh down` stops everything;
+`./dev.sh down --volumes` also deletes all data.
 
 ## 3. Work on one service
 
-Run the infrastructure in Docker and the service you are changing from source, with hot reload:
-
 ```sh
-cd ops && docker compose up -d mysql redis       # or the whole stack, then: docker compose stop wallet-core
-cd ../wallet-core
+cd wallet-core
+npm run infra:up                              # or: npm run infra -- up rates-service  (+ a neighbour in Docker)
 npm install
 npm run migrate
-DEV_AUTH=true npm run start:dev                  # wallet-core :3000, rates-service :3001, treasury-service :3002
+DEV_AUTH=true npm run start:dev               # wallet-core :3000, rates-service :3001, treasury-service :3002
 ```
 
-Frontends: `npm run dev` (client-web on :5173, back-office on :5174). Each repository's README lists its scripts
+- Your service reaches MySQL, Redis and the containers at `localhost:<port>`; the defaults in `.env.example`
+  already match.
+- Containers reach your service at `host.docker.internal:<port>` (preconfigured as `WALLET_CORE_URL`,
+  `RATES_SERVICE_URL`, `TREASURY_SERVICE_URL`).
+- Do not run the same service in Docker and from source at once (same port): `./dev.sh down wallet-core` first.
+
+Frontends: `npm run dev` (client-web on :5173, back-office on :5174), with the backends started by
+`npm run infra -- up wallet-core rates-service` or run from source. Each repository's README lists its scripts
 (lint, tests, e2e tests, codegen, migrations).
 
 ## Dev auth: calling the API before real login exists
@@ -105,7 +131,7 @@ backend exists. Types come from each backend's `schema.graphql`: `npm run schema
 Each deployment serves one client, set by `CLIENT` (`demo`, `kvitka`, `wisla`; default `demo`):
 
 ```sh
-cd ops && CLIENT=kvitka docker compose up -d --build
+cd ops && CLIENT=kvitka ./dev.sh up all
 ```
 
 When running a service from source: `CLIENT=kvitka DEV_AUTH=true npm run start:dev`.
