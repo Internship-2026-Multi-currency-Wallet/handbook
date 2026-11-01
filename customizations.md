@@ -153,10 +153,8 @@ few files; each branch has its own version of them.
 
 | What | Where |
 |---|---|
-| Logo, favicon | fixed paths under `public/brand/` |
-| Product name | `siteName` in `config-env.ts` |
-| Colours, font | the brand theme file (MUI palette and typography) |
-| Page title, web manifest | `index.html`, `manifest.json` |
+| Logo, favicon | `public/brand/logo.svg`, `public/brand/favicon.svg` |
+| Product name, palette, font | `src/brand/brand.ts` |
 
 - `main` contains the **Demo Wallet** brand (seen on `staging`).
 - `client/kvitka-uat` and `client/wisla-uat` contain the same files with Kvitka and Wisła versions.
