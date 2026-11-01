@@ -148,8 +148,24 @@ Never write `if (client === 'kvitka')` in shared frontend code.
 
 ### Branding
 
-Client name, logo and theme come from client settings, not from code — so onboarding a new client
-does not require a frontend change.
+Branding works through **brand files on the client branch**. Shared code always refers to the same
+few files; each branch has its own version of them.
+
+| What | Where |
+|---|---|
+| Logo, favicon | fixed paths under `public/brand/` |
+| Product name | `siteName` in `config-env.ts` |
+| Colours, font | the brand theme file (MUI palette and typography) |
+| Page title, web manifest | `index.html`, `manifest.json` |
+
+- `main` contains the **Demo Wallet** brand (seen on `staging`).
+- `client/kvitka-uat` and `client/wisla-uat` contain the same files with Kvitka and Wisła versions.
+- Components never hard-code colours or names; they use the theme and `siteName`.
+- When `main` is merged into a client branch, brand files normally don't conflict, because `main` rarely touches them.
+  If it does, resolve the conflict in favour of the client's version.
+- Assets and palettes: [`brands/`](brands/README.md).
+
+To see a client's brand locally, check out its branch.
 
 ## Checklist before adding a customization
 
