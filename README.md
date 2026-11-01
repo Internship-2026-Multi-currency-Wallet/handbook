@@ -3,7 +3,7 @@
 Welcome! This handbook is everything you need to start working on the internship project.
 It is a living document: if something is unclear or out of date, ask in the team chat or open a PR.
 
-> Status: **draft**. Some details (local setup, exact sub-domains) will be filled in once the skeleton repositories are ready.
+> Status: **draft**. Some details (exact sub-domains) will be filled in once the environments are deployed.
 
 ## What we are building
 
