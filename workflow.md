@@ -131,9 +131,8 @@ The skeleton repositories come with seams that let you build before the real par
 | Permission decorator / component, permissive in dev mode | Build back-office pages before roles exist |
 | Settings stub with defaults | Use spread, fees and limits before the settings store exists |
 | Fake rates client | Build conversions before `rates-service` is live |
-| Typed event catalog + a script to publish fake events | Build consumers before producers exist |
+| Typed event catalog + publisher/subscriber helpers | Producers and consumers agree on the same event shapes |
 | Generated GraphQL types + Mock Service Worker handlers (`VITE_USE_MOCKS=true`) | Build every screen before its backend exists |
-| Seed data script (clients, users, staff, balances) | Test against the same data as everyone else |
 
 Exact names may differ slightly in the skeletons — check each repo's README.
 

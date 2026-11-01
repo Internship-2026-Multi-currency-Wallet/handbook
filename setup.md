@@ -113,4 +113,3 @@ PayGate is not part of the local stack: it is an external sandbox at `https://pa
 
 ## Not there yet
 
-- Seed data (demo clients, users, staff, balances) will be added later.
