@@ -52,7 +52,7 @@ Plan about an hour for the first read. You do not need to remember everything â€
 
 | What | Where |
 |---|---|
-| Tasks | Asana project: `<ASANA_PROJECT_URL>` |
+| Tasks | Asana project: `https://app.asana.com/1/2427620016900/project/1220109449481948` |
 | Code | GitHub organization (you will receive an invitation) |
 | This handbook | The `handbook` repository |
 | PayGate integration docs | <https://paygate.wallet.shatori.com/docs> *(available after deploy)* |

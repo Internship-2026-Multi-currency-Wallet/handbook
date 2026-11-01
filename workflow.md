@@ -4,7 +4,7 @@ How we go from an Asana task to code running on a client's environment.
 
 ## Tasks in Asana
 
-Project: `<ASANA_PROJECT_URL>`
+Project: `https://app.asana.com/1/2427620016900/project/1220109449481948`
 
 - **Sections = epics** (e.g. Identity & access, Ledger & balances, Rates, Top-ups, Conversion,
   Transfers & withdrawals, Compliance & back-office, Treasury & hedging, Delivery & release process, Bonus).
