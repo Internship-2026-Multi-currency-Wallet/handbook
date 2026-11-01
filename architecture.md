@@ -83,8 +83,8 @@ Both frontends use the same stack, so you can move between them easily.
 |---|---|---|---|
 | Frontend → backend | GraphQL queries & mutations | Everything the UI reads or changes | `balances`, `createQuote`, `confirmConversion` |
 | Frontend ← backend, live | GraphQL subscriptions (WebSocket) | Live data | `rateUpdated`, balance changes, exposure |
-| Service → service, sync | GraphQL | Asking another service now, needing an answer | `wallet-core` asks `rates-service` for the current rate |
-| Service → service, live data | **Redis pub/sub** | Fire-and-forget; missing one message is fine | `rate.tick` |
+| Service → service, sync | GraphQL | Asking another service now, needing an answer (rare) | `wallet-core` loads the current rates from `rates-service` once on start |
+| Service → service, live data | **Redis pub/sub** | Fire-and-forget; missing one message is fine | `rate.tick`: `wallet-core` and `treasury-service` keep the latest rates in memory from it, so conversions keep working if `rates-service` restarts |
 | Service → service, events | **Redis Streams** + consumer groups | Events that must **not** be lost; consumers ack and retry | `conversion.completed` → `treasury-service` |
 
 Rules of thumb:
