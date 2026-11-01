@@ -145,6 +145,7 @@ Backends of an environment (GraphQL at `/graphql`, health at `/health`, subscrip
 
 - Frontends are static builds on **Cloudflare Pages**; backends run on the mentor's VPS (Dokploy) with one shared
   MySQL (a database per environment and service, e.g. `staging_wallet_core`) and one Redis (keys prefixed with `APP_ENV`).
+- Logs of all deployed backends go to Grafana Loki: <https://logs.wallet.shatori.com> — see [logging.md](logging.md).
 - PayGate is **one shared instance**: <https://paygate.wallet.shatori.com> (docs at [`/docs`](https://paygate.wallet.shatori.com/docs)).
 - Deploys happen **only through CI**: a push (a merged PR) to `main` or `client/<c>-uat` builds the image / static app in
   GitHub Actions and redeploys that environment; the job turns green only when the new version is live.

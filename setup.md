@@ -149,6 +149,7 @@ Besides your local stack there are three shared environments, deployed automatic
 
 Dev auth (`Authorization: Dev 1:wallet`) works on `staging` only. Check a backend with
 `curl https://staging-wallet-core.wallet.shatori.com/health`. Details: [architecture.md](architecture.md#environments).
+Logs of all deployed backends are in Grafana at <https://logs.wallet.shatori.com> — see [logging.md](logging.md).
 
 ## PayGate
 
