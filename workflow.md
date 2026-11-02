@@ -31,6 +31,21 @@ Leads rotate, so everyone leads several features.
 3. Implement in small PRs. Link every PR in the task.
 4. When merged and deployed to `staging`, the lead checks the acceptance criteria and marks the task done.
 
+### Status field
+
+Every task and subtask has a **Status** field. Keep it current — it is how the team sees who is doing what.
+
+| Status | When |
+|---|---|
+| `To do` | Nobody has started yet |
+| `In progress` | You picked it up and assigned it to yourself |
+| `In review` | Your PR is open — link it in a task comment |
+| `Blocked` | You are waiting for another task or a decision — say what in a comment |
+| `Done` | The PR is merged and deployed to `staging`; mark the subtask complete as well |
+
+A parent task (feature) is `In progress` while any subtask is in progress, and `Done` only after all subtasks are
+done and the lead has shown the demo to the mentor.
+
 ## Branches and releases
 
 | Branch | Purpose |
