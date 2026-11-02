@@ -96,9 +96,44 @@ Link to the Asana task + one sentence of context.
 ## How to test
 Steps, or which tests cover it. Screenshots / a short video for UI changes.
 
+## Environment variables
+None. (Or a table: variable, purpose, value per environment — see "Environment variables" below.)
+
 ## Notes
 Contract changes, migrations, follow-ups, anything reviewers should look at first.
 ```
+
+### Environment variables
+
+Deployed backends get their environment variables from **Dokploy**, which only the mentor can access.
+So when your change needs a **new** variable, or a **different value** for an existing one, say so in the PR,
+and the mentor sets it.
+
+1. **Add it to the code.**
+   - Declare it in the service's env schema, so a missing or invalid value stops the service at startup
+     with a clear error.
+   - Add it to `.env.example` with a working local value (or a placeholder for a secret) and a one-line comment.
+2. **Fill in the "Environment variables" section of the PR description**: name, what it is for, and the value
+   for each environment. For a secret, write "secret" and where it comes from (e.g. "Resend API key"),
+   never the value itself.
+
+   ```markdown
+   ## Environment variables
+   | Variable | Purpose | staging | kvitka-uat | wisla-uat |
+   |---|---|---|---|---|
+   | `EMAIL_FROM` | Sender address of system emails | `no-reply@staging.wallet.shatori.com` | `no-reply@kvitka-uat.wallet.shatori.com` | `no-reply@wisla-uat.wallet.shatori.com` |
+   | `RESEND_API_KEY` | Resend API key | secret (Resend, staging key) | secret | secret |
+   ```
+
+3. **Wait for the mentor** to confirm in the PR that the values are set, **before merging**. Otherwise the
+   deploy starts a service with a missing variable and it fails.
+   Client environments (`*-uat`) get the change later with the release, but set their values at the same time
+   so nothing is forgotten.
+
+The same applies when you **rename or remove** a variable: list it in the PR so the mentor cleans it up.
+
+Frontends have no secrets, and their per-environment values are in Git (`src/config-env.ts` and the deploy
+workflow in `ops`), so you change those in your PR as usual. Anything secret must stay in a backend.
 
 ### Commit messages
 
