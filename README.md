@@ -46,6 +46,7 @@ Details are in [product.md](product.md).
 5. [customizations.md](customizations.md) — how one codebase serves different clients
 6. [setup.md](setup.md) — getting the system running locally
 7. [logging.md](logging.md) — how to log in code and how to search logs in Grafana
+8. [metrics.md](metrics.md) — what is measured, how to read the dashboards, how to add a metric
 
 Plan about an hour for the first read. You do not need to remember everything — come back when a task touches a topic.
 
@@ -58,7 +59,7 @@ Plan about an hour for the first read. You do not need to remember everything �
 | This handbook | The `handbook` repository |
 | PayGate integration docs | <https://paygate.wallet.shatori.com/docs> |
 | Environments | <https://staging.wallet.shatori.com> (+ `kvitka-uat`, `wisla-uat`) — see [architecture.md](architecture.md#environments) |
-| Logs (Grafana) | <https://logs.wallet.shatori.com> — see [logging.md](logging.md) |
+| Logs and metrics (Grafana) | <https://logs.wallet.shatori.com> — see [logging.md](logging.md) and [metrics.md](metrics.md) |
 
 ## Ground rules
 
