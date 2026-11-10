@@ -11,7 +11,7 @@ CPU / memory of every backend container ─────────┘
 ```
 
 All three backends expose the same metrics with the same names, so every dashboard works for every service. rates-service and
-treasury-service add one metric each (see _What is collected_).
+treasury-service add a few of their own (see _What is collected_).
 
 ## What is collected
 
@@ -47,6 +47,7 @@ Every series carries `service` (`wallet-core`, `rates-service`, `treasury-servic
   |---|---|---|---|---|
   | rates-service | `rate_ticks_published_total` | counter | `pair` | Rate ticks published (`rate.tick`), by currency pair, e.g. `USD/UAH` |
   | treasury-service | `events_consumed_total` | counter | `type` | Events received through `EventSubscriber`, once per message, e.g. `system.ping` |
+  | rates-service, treasury-service | `events_failed_total` | counter | `type` | Received events that failed to decode, or whose handler threw (once per failing handler). Above 0 means events are being lost; the cause is in the logs |
 
 - **Host and containers** (collected by Alloy, not by the backends): host CPU, load, memory, disk and network, and
   CPU and memory of every backend container.
