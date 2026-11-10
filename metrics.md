@@ -10,7 +10,8 @@ host CPU / RAM / disk / network ────────────────
 CPU / memory of every backend container ─────────┘
 ```
 
-All three backends expose the same metrics with the same names, so every dashboard works for every service.
+All three backends expose the same metrics with the same names, so every dashboard works for every service. rates-service and
+treasury-service add one metric each (see _What is collected_).
 
 ## What is collected
 
@@ -40,6 +41,13 @@ Every series carries `service` (`wallet-core`, `rates-service`, `treasury-servic
   HTTP, `GRAPHQL_VALIDATION_FAILED` under `(unknown)` for invalid queries), but **not** in `http_requests_total`. So
   `graphql_errors_total / http_requests_total` for an operation that also runs over the websocket can go above
   100 %. A subscription counts a code once per event that fails, not once per subscription.
+- **Service-specific metrics:**
+
+  | Service | Metric | Type | Labels | Meaning |
+  |---|---|---|---|---|
+  | rates-service | `rate_ticks_published_total` | counter | `pair` | Rate ticks published (`rate.tick`), by currency pair, e.g. `USD/UAH` |
+  | treasury-service | `events_consumed_total` | counter | `type` | Events received through `EventSubscriber`, once per message, e.g. `system.ping` |
+
 - **Host and containers** (collected by Alloy, not by the backends): host CPU, load, memory, disk and network, and
   CPU and memory of every backend container.
 
