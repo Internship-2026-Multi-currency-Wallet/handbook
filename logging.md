@@ -1,7 +1,8 @@
 # Logging
 
 All backends write **structured JSON logs**, one line per event. On the deployed environments (`staging`,
-`kvitka-uat`, `wisla-uat`) the lines are collected into **Grafana Loki**; you read and search them in
+`kvitka-uat`, `wisla-uat`) the lines are collected into **Grafana Loki**, together with the logs of the shared Redis
+and MySQL and an event every time one of these containers stops; you read and search them in
 **Grafana**: <https://logs.wallet.shatori.com> (ask the mentor for an account — you get the *Viewer* role).
 
 Locally (`npm run start:dev`) the same logs are pretty-printed in your terminal.
@@ -65,8 +66,10 @@ subscriptions put `x-request-id` into the graphql-ws `connectionParams`.
 Open **Dashboards → Internship → Logs** (the home page): pick environment, service and level, type a `requestId`
 or any text. For ad-hoc queries use **Explore** with the Loki data source.
 
-Labels you can select on: `env` (`staging`, `kvitka-uat`, `wisla-uat`), `service` (`wallet-core`, `rates-service`,
-`treasury-service`), `level`. Everything else is inside the JSON line (`| json`).
+Labels you can select on: `env` (`staging`, `kvitka-uat`, `wisla-uat`; `shared` for Redis and MySQL), `service`
+(`wallet-core`, `rates-service`, `treasury-service`, `redis`, `mysql`), `level`. Everything else is inside the JSON
+line (`| json`). Redis and MySQL write plain text, so their lines have **no `level`**: pick *Level = All* to see them.
+Loki also shows a `detected_level` it guesses from the text; do not rely on it.
 
 | Question | LogQL |
 |---|---|
@@ -79,6 +82,39 @@ Labels you can select on: `env` (`staging`, `kvitka-uat`, `wisla-uat`), `service
 | GraphQL errors by code | `sum by (code) (count_over_time({env="staging", level=~"warn\|error"} \| json \| context="GraphQL" [1h]))` |
 
 Logs are kept for **14 days**.
+
+## Why did Redis or MySQL restart?
+
+When a backend logs `ECONNREFUSED`, `ENOTFOUND internship-redis-…` or a MySQL connection error, look at the shared
+service itself. Next to its own lines, Loki has one line per **stop of the container**, written by Docker (through the
+small `docker-events` service), so it is there even when the process was killed and could not write anything:
+
+```json
+{"action":"die","container":"internship-redis-….1.…","exitCode":"137"}
+```
+
+| Question | LogQL |
+|---|---|
+| What Redis said and what happened to it, in time order | `{service="redis"}` |
+| Only the stops of MySQL | `{service="mysql"} \|= "\"action\""` |
+| Out-of-memory kills of anything we run | `{level="error"} \|= "\"action\":\"oom\""` |
+| What the backends saw at that time | `{env="staging", level="error"}` (same time range) |
+
+The same events exist for the backends: a stop of `wallet-core` on `staging` is in `{env="staging", service="wallet-core"}`.
+
+| `action` / `exitCode` | Meaning | `level` |
+|---|---|---|
+| `die`, `0` | The process stopped by itself, cleanly | `info` |
+| `die`, `143` | Stopped with SIGTERM: a normal restart or deploy | `info` |
+| `oom`, then `die`, `137` | Killed because it used up its memory limit (Redis has 256 MB on the server) | `error` |
+| `die`, `137` without `oom` | Killed (SIGKILL): did not stop in time, or killed by hand | `error` |
+| `die`, `1` or another code | Crashed: read its last lines just before the event | `error` |
+
+A normal restart therefore looks like: shutdown lines (Redis: `Received SIGTERM scheduling shutdown…`) → `die` with
+`0` or `143` → start-up lines of the new container. An OOM kill has no shutdown lines: the last ordinary line, then
+`oom` and `die` `137`, then the start-up lines.
+
+Events are lost while `docker-events` itself is down (for example during a Docker restart on the server).
 
 ## Try it
 
