@@ -103,6 +103,28 @@ Rules of thumb:
 - Until real auth exists, the skeletons provide a **dev mode** so you can build business logic without real tokens
   (see [workflow.md](workflow.md#working-in-parallel)).
 
+## Rate limits
+
+Every backend (`wallet-core`, `rates-service`, `treasury-service`) has the same global rate limit, so one user or one
+IP cannot overload a service. It is a global guard in each service's `src/throttling`; details are in each repo's
+README, section "Rate limits".
+
+| Caller | Counted per | Default limit per 60 s |
+|---|---|---|
+| Not logged in | client IP (`X-Forwarded-For`, one trusted proxy: Traefik) | 120 |
+| Logged-in user / staff | user id / staff id from the token | 600 |
+
+- **One HTTP request counts once**, however many fields a GraphQL request has.
+- **Fixed window.** Once the limit is hit, requests are refused until the window ends.
+- **Each service counts on its own.** Counters live in the shared Redis under
+  `<APP_ENV>:throttle:<service>:<key>`, e.g. `staging:throttle:wallet-core:user:42`.
+- **Refused request:** GraphQL error `TOO_MANY_REQUESTS` with `extensions.retryAfterSeconds`; REST `429` with
+  `Retry-After`. Both give the seconds until the window ends — the frontend waits that long before retrying.
+- **Not counted:** `GET /health`, `/metrics` (wallet-core) and everything over the WebSocket (subscriptions).
+- **Redis down:** requests pass without a limit and a warning is logged at most once a minute.
+- **Changing a limit** on an environment: `THROTTLE_TTL_SECONDS`, `THROTTLE_LIMIT_ANONYMOUS`, `THROTTLE_LIMIT_USER`,
+  set by the mentor (see [workflow.md](workflow.md#environment-variables)).
+
 ## External rate sources
 
 All sources are **free public APIs** that work without an API key. Check each source's terms of use
