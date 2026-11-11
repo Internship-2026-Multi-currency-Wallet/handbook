@@ -71,8 +71,8 @@ Going from "slow" to the cause:
 1. **Services**: which service and operation? Example: p95 of `mutation convert` jumps from 40 ms to 900 ms at 14:05.
 2. **Server**: is it the service or the machine? The wallet-core container at 100 % CPU while the host is fine means
    the service itself.
-3. **Logs** for the request behind the spike: click a dot on the graph (see _From a graph to the logs_), or open
-   Logs at 14:05 for that service.
+3. **Logs** for the request behind the spike: click a dot on the graph, or click the graph at 14:05 to open the logs
+   of that service at that moment (see _From a graph to the logs_).
 
 How to read the panels:
 
@@ -85,6 +85,11 @@ How to read the panels:
 - **Restarts** counts new processes in the range, deploys included.
 
 ## From a graph to the logs
+
+**Any point** on a graph of _Services_ or _Server_ opens the _Logs_ dashboard for that environment and service,
+5 minutes around the point (for the host graphs: the logs of all services). One click is enough. On _Latency_ and
+_GraphQL errors by code_ the click pins the tooltip instead, with the link in it (**Logs of … at this moment**),
+because there a click on a dot opens a single request.
 
 The dots on _Latency p50 / p95 / p99_ and _GraphQL errors by code_ are **exemplars**: each one is a real request
 (its duration, or one of its errors) with its `requestId`. Hover a dot to see the `trace_id` (the `requestId`); click
