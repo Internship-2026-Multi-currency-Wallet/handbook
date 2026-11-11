@@ -71,7 +71,8 @@ Going from "slow" to the cause:
 1. **Services**: which service and operation? Example: p95 of `mutation convert` jumps from 40 ms to 900 ms at 14:05.
 2. **Server**: is it the service or the machine? The wallet-core container at 100 % CPU while the host is fine means
    the service itself.
-3. **Logs** at 14:05 for that service: what exactly happened.
+3. **Logs** for the request behind the spike: click a dot on the graph (see _From a graph to the logs_), or open
+   Logs at 14:05 for that service.
 
 How to read the panels:
 
@@ -82,6 +83,20 @@ How to read the panels:
 - **Heap, event-loop lag and container CPU/memory** are drawn per process, never summed. During a deploy you briefly
   see two lines: the old and the new container.
 - **Restarts** counts new processes in the range, deploys included.
+
+## From a graph to the logs
+
+The dots on _Latency p50 / p95 / p99_ and _GraphQL errors by code_ are **exemplars**: each one is a real request
+(its duration, or one of its errors) with its `requestId`. Hover a dot to see the `trace_id` (the `requestId`); click
+**Logs of this request** to open the _Logs_ dashboard filtered by it, 5 minutes around the request. The `requestId`
+travels with events, so you see the request in every service it reached.
+
+- Pick the highest dot of a latency spike: that is one of the slow requests, no LogQL or guessing the minute needed.
+  The graph lags up to a minute behind the requests (rates use a 1-minute window); the dots do not.
+- An exemplar is not a label: it adds no time series, so the label rules below still hold.
+- Prometheus keeps the latest 50 000 exemplars, so dots are there for recent requests; older ranges may have none.
+- Only HTTP requests have dots; websocket operations do not. A client-sent `x-request-id` longer than 120 characters
+  gets no dot (OpenMetrics caps exemplar labels at 128 characters).
 
 ## Adding a metric to a feature
 
