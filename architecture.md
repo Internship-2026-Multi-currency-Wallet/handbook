@@ -125,6 +125,40 @@ README, section "Rate limits".
 - **Changing a limit** on an environment: `THROTTLE_TTL_SECONDS`, `THROTTLE_LIMIT_ANONYMOUS`, `THROTTLE_LIMIT_USER`,
   set by the mentor (see [workflow.md](workflow.md#environment-variables)).
 
+## Redis outages
+
+A backend needs MySQL to work, but not Redis. While Redis is down, only the features that use Redis stop.
+
+- **Start and reconnect.** All three backends start without Redis and reconnect automatically when it is back.
+  You do not need to restart them.
+- **Health.** If only Redis is down, `GET /health` returns HTTP 200 with `status: "degraded"` and `redis: "DOWN"`, so
+  health checks can treat the service as available. If the database is down, it returns HTTP 503. When both are up,
+  `status` is `"ok"`.
+- **Requests.** A request that needs Redis fails on its own (e.g. `POST /diagnostics/ping` returns 503). Requests that
+  do not depend on unavailable Redis functionality can continue. The rate limit fails open: requests pass without a
+  limit (see [Rate limits](#rate-limits)).
+- **Connections.** The shared command client has no offline queue and a 2-second command timeout, so a command fails
+  quickly instead of waiting for Redis. The pub/sub subscriber keeps its queue and resubscribes automatically after
+  reconnecting.
+- **Lost and repeated messages.** Pub/sub messages sent while a service is disconnected are not replayed. A command
+  that was in flight may be sent again after reconnecting, so a timeout does not prove the command was not delivered.
+- **wallet-core emails.** Enqueueing an email waits at most 5 s. If it times out, the job may still be stored and sent
+  later, so delivery is uncertain. On shutdown, the email worker gives running sends 3 s to finish and then closes by
+  force. Closing by force does not cancel a send that is still running. The job may run again, so SMTP may deliver a
+  duplicate.
+- **treasury-service jobs.** Scheduling the heartbeat job does not block startup. On shutdown, the service closes the
+  Worker and the Queue connections it owns. Future long-running processors (e.g. hedging) need their own shutdown
+  policy.
+- **Deploys.** The CI deploy gate accepts HTTP 200 from `/health` with the expected SHA as `version` and `status`
+  `ok` or `degraded`. A `degraded` deploy passes with a warning. The gate skips the SHA check only when the caller sets
+  `check-version: false`.
+- **Stream consumers** (e.g. `conversion.completed` → `treasury-service`) are a separate task. This section does not
+  describe their behavior yet.
+
+Details are in each backend's README (*Events*, *Rate limits*; wallet-core *Email*; treasury-service *Process roles*)
+and in the `ops` README (*Deployment*). To try the behavior locally, see
+[setup.md](setup.md#redis-outage-demo-local).
+
 ## External rate sources
 
 All sources are **free public APIs** that work without an API key. Check each source's terms of use

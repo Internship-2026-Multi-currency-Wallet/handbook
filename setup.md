@@ -137,6 +137,78 @@ cd ops && CLIENT=kvitka ./dev.sh up all
 When running a service from source: `CLIENT=kvitka DEV_AUTH=true npm run start:dev`.
 The backends report the current client in `health { client }`.
 
+## Redis outage demo (local)
+
+This procedure lets you see the behavior from [architecture.md](architecture.md#redis-outages) on your own machine.
+It describes the steps only; it does not claim that anyone has run them. The paths assume the repositories are
+cloned in `~/wallet`.
+
+- Use **only your local stack**. Never stop the shared `staging`/UAT Redis without coordinating with the mentor.
+- This procedure does not delete volumes or intentionally flush Redis: `./dev.sh down redis` removes only the Redis
+  container and keeps the `redis-data` volume. Keeping the volume does not guarantee that every recent key survives,
+  so use disposable local data for the demo. Do not use `./dev.sh down --volumes`, `FLUSHDB` or `FLUSHALL`.
+- Before you start: each backend has the Redis outage changes (E1-14) and has been set up as in
+  [Work on one service](#3-work-on-one-service). No backend runs in Docker: `./dev.sh ps` shows only the
+  infrastructure.
+
+**1. Start.** Start the infrastructure:
+
+```sh
+cd ~/wallet/ops && ./dev.sh up                          # MySQL + Redis
+```
+
+Then run each backend from source in its own terminal. Each one gets its own `METRICS_PORT`, because they all
+default to the same one:
+
+```sh
+cd ~/wallet/wallet-core && PORT=3000 METRICS_PORT=19464 DEV_AUTH=true npm run start:dev   # dev auth for the ping
+```
+
+```sh
+cd ~/wallet/rates-service && PORT=3001 METRICS_PORT=19465 npm run start:dev
+```
+
+```sh
+cd ~/wallet/treasury-service && PORT=3002 METRICS_PORT=19466 ROLE=GATEWAY,WORKER npm run start:dev
+```
+
+**2. Check that everything works.** Use these two commands at every check below:
+
+```sh
+for port in 3000 3001 3002; do curl -sS --max-time 5 -w ' HTTP %{http_code}\n' localhost:$port/health; done
+curl -sS --max-time 5 -w ' HTTP %{http_code}\n' -X POST localhost:3000/diagnostics/ping -H 'Authorization: Dev 1:wallet'
+```
+
+Expected: every health line shows `"status":"ok"`, `"redis":"UP"` and `HTTP 200`. The ping returns
+`{"published":true} HTTP 200`, and each of the three backend terminals logs `system.ping received from wallet-core`.
+The treasury-service terminal logs `Heartbeat job … processed by pid …` every 30 s.
+
+**3. Stop Redis for one minute.** Run `cd ~/wallet/ops && ./dev.sh down redis`, then repeat the checks during that
+minute. Expected:
+
+- every health line shows `"status":"degraded"`, `"redis":"DOWN"`, `"db":"UP"` and still `HTTP 200`;
+- the ping returns `HTTP 503`; the rejected ping is not queued for later delivery;
+- each backend logs `Redis unavailable, reconnecting with backoff`, and no heartbeat jobs run;
+- the backends keep running.
+
+**4. Start Redis again** after 60 s: `cd ~/wallet/ops && ./dev.sh up` (waits until Redis is healthy). Expected:
+
+- health is back to `"status":"ok"` and `"redis":"UP"`. This does not prove that the subscribers are ready yet;
+- each backend logs `Redis connection restored`, for `connection: "command"` and for `connection: "subscriber"`.
+  Wait until all three backends have logged it for the subscriber, then give them a few more seconds to resubscribe;
+- then send a new ping and check that all three backends log `system.ping received from wallet-core`. If one is
+  missing, wait and send another ping;
+- heartbeat jobs start again within about 30 s.
+
+**5. Cold start without Redis.** Stop the three backends (Ctrl+C) and run `cd ~/wallet/ops && ./dev.sh down redis`.
+While Redis stays down, start only the three backend processes again with the same three backend commands as in
+step 1. Expected: all three start, and health shows `"status":"degraded"` with `HTTP 200`. Then start Redis with
+`cd ~/wallet/ops && ./dev.sh up` and repeat the checks from step 4. In addition, treasury-service logs
+`Heartbeat scheduled every 30s` before the heartbeat jobs.
+
+Details, options and tests are in each backend's README (*Events*, *Rate limits*; wallet-core *Email*;
+treasury-service *Process roles*).
+
 ## Deployed environments
 
 Besides your local stack there are three shared environments, deployed automatically from Git:
