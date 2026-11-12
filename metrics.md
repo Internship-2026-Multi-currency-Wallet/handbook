@@ -87,7 +87,8 @@ How to read the panels:
 ## From a graph to the logs
 
 **Any point** on a graph of _Services_ or _Server_ opens the _Logs_ dashboard for that environment and service,
-5 minutes around the point (for the host graphs: the logs of all services). One click is enough. On _Latency_ and
+5 minutes around the point (for the host graphs: all services of the environments selected on _Server_). One click
+is enough. On _Latency_ and
 _GraphQL errors by code_ the click pins the tooltip instead, with the link in it (**Logs of … at this moment**),
 because there a click on a dot opens a single request.
 
