@@ -61,6 +61,28 @@ export class ConversionService {
 Send your own `x-request-id` header to follow one call. Every response returns its `x-request-id`; for GraphQL
 subscriptions put `x-request-id` into the graphql-ws `connectionParams`.
 
+### GraphQL errors (E1-17)
+
+This describes the implementations in
+[wallet-core #39](https://github.com/Internship-2026-Multi-currency-Wallet/wallet-core/pull/39),
+[rates-service #14](https://github.com/Internship-2026-Multi-currency-Wallet/rates-service/pull/14) and
+[treasury-service #10](https://github.com/Internship-2026-Multi-currency-Wallet/treasury-service/pull/10).
+Deployment and staging verification are pending.
+
+A failure is **expected** when the original error is a `GraphQLError` with a string `extensions.code`. A code that a
+wrapper adds or copies does not count.
+
+| Failure | Log | Response |
+|---|---|---|
+| Expected | One GraphQL `warn` with `code`, `path` (when available) and `requestId`; no `err`, no extra Nest ERROR | Its message and code |
+| Unexpected server failure | `error` with the stack, using the existing redaction rules | Masked: `INTERNAL_SERVER_ERROR` |
+| Nest `HttpException` | HTTP: 4xx at `warn`. graphql-ws: 4xx not logged, pending Ihor's decision | Not masked |
+
+- HTTP errors are logged by the Apollo plugin; graphql-ws errors by separate graphql-ws hooks.
+- An unexpected resolver failure may produce two ERROR records: one from Nest, one from GraphQL.
+- Access lines and separate domain or throttler warnings still appear.
+- Client validation errors are not server crashes. Their response and metric codes can differ between services.
+
 ## Searching in Grafana
 
 Open **Dashboards → Internship → Logs** (the home page): pick environment, service and level, type a `requestId`
