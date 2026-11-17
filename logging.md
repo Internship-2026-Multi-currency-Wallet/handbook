@@ -70,7 +70,7 @@ wrapper adds or copies does not count.
 |---|---|---|
 | Expected | One GraphQL `warn` with `code`, `path` (when available) and `requestId`; no `err`, no extra Nest ERROR | Its message and code |
 | Unexpected server failure | `error` with the stack, using the existing redaction rules | Masked: `INTERNAL_SERVER_ERROR` |
-| Nest `HttpException` | HTTP: 4xx at `warn`. graphql-ws: 4xx not logged yet, see [E1-18](https://app.asana.com/0/0/1220564581135534/f/) | Not masked |
+| Nest `HttpException` | HTTP: 4xx at `warn`. graphql-ws: Nest 4xx produce one GraphQL `warn` with `HTTP_<status>`, `path` and `requestId`; existing strategy WARNs remain, no extra ERROR. | Not masked |
 
 - HTTP errors are logged by the Apollo plugin; graphql-ws errors by separate graphql-ws hooks.
 - An unexpected resolver failure may produce two ERROR records: one from Nest, one from GraphQL.
