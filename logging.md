@@ -71,9 +71,15 @@ wrapper adds or copies does not count.
 | Expected | One GraphQL `warn` with `code`, `path` (when available) and `requestId`; no `err`, no extra Nest ERROR | Its message and code |
 | Unexpected server failure | `error` with the stack, using the existing redaction rules | Masked: `INTERNAL_SERVER_ERROR` |
 | Nest `HttpException` | HTTP: 4xx at `warn`. graphql-ws: Nest 4xx produce one GraphQL `warn` with `HTTP_<status>`, `path` and `requestId`; existing strategy WARNs remain, no extra ERROR. | Not masked |
+| In a running subscription: an event fails to resolve, or its source fails | One GraphQL record per error, `warn` or `error` by the rows above, with `operation`, `subscriptionId`, `code`, `path` (when available) and the connection's `requestId`; `err` with the stack only at `error`; no Nest record | As in the rows above |
 
 - HTTP errors are logged by the Apollo plugin; graphql-ws errors by separate graphql-ws hooks.
-- An unexpected resolver failure may produce two ERROR records: one from Nest, one from GraphQL.
+- An unexpected resolver failure may produce two ERROR records: one from Nest, one from GraphQL. A subscription's
+  `resolve` is not run by Nest, so an event that fails there produces one.
+- A subscription lives on after an event fails, and each failed event is logged. A failed source ends the subscription.
+- `operation` and `subscriptionId` match the subscription's `started` and `completed` lines. Without an
+  `operationName` from the client, the name comes from the document, then from its first field.
+- `graphql_errors_total` counts a result once per code, so two errors in one event are two records but one count.
 - Access lines and separate domain or throttler warnings still appear.
 - Client validation errors are not server crashes. Their response and metric codes can differ between services.
 
