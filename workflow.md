@@ -84,6 +84,27 @@ are **your tasks** in the delivery epic. The mentor provides only the basic `mai
 - Reviewers: be specific and kind. Prefix optional remarks with `nit:`. Approve when it is good enough, not perfect.
 - Authors: answer every comment (fix it or explain why not). Do not resolve someone else's comment silently.
 
+### Backend CI
+
+Every pull request and push to `main` or `client/**` in `wallet-core`, `rates-service` and
+`treasury-service` runs the `checks` GitHub Actions job. It runs `npm ci`, `format:check`,
+`lint`, `typecheck`, unit tests, database migrations, e2e tests and `build`, in that order.
+CI uses MySQL and Redis service containers, npm caching and a 10-minute job limit.
+Any failing step fails the check.
+
+The `checks` status must pass before merging into `main`. The mentor will configure it
+as a required branch-protection check after the CI workflows are merged.
+
+To reproduce the checks locally, run `npm run infra:up && npm run infra -- info`, set
+`DATABASE_URL` and `REDIS_URL` to the reported local values, then run the same commands
+in order. Migrations and e2e tests modify database and Redis data: never run them against
+staging, UAT, production or shared test infrastructure.
+
+See the CI instructions in each service's README:
+[wallet-core](https://github.com/Internship-2026-Multi-currency-Wallet/wallet-core/blob/main/README.md#ci),
+[rates-service](https://github.com/Internship-2026-Multi-currency-Wallet/rates-service/blob/main/README.md#ci) and
+[treasury-service](https://github.com/Internship-2026-Multi-currency-Wallet/treasury-service/blob/main/README.md#ci).
+
 ### PR description template
 
 ```markdown
