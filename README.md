@@ -61,7 +61,7 @@ Plan about an hour for the first read. You do not need to remember everything �
 | PayGate integration docs | <https://paygate.wallet.shatori.com/docs> |
 | Environments | <https://staging.wallet.shatori.com> (+ `kvitka-uat`, `wisla-uat`) — see [architecture.md](architecture.md#environments) |
 | Logs and metrics (Grafana) | <https://logs.wallet.shatori.com> — see [logging.md](logging.md) and [metrics.md](metrics.md) |
-| Task updates in Slack | **#asana** — see [slack.md](slack.md) |
+| Task updates in Slack | **#asana-tasks** — see [slack.md](slack.md) |
 
 ## Ground rules
 
